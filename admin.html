@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AbhiScholar Admin Dashboard - Control Center</title>
+    <meta name="description" content="Premium SaaS Control panel for AbhiScholar Portal updates, academic listings, and career options.">
+    
+    <!-- Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons & Tailwind CSS -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#2563EB',
+                            hover: '#1D4ED8',
+                            light: 'rgba(37, 99, 235, 0.08)'
+                        },
+                        secondary: '#F97316',
+                        accent: '#10B981',
+                        darkBg: '#0F172A',
+                        darkSurface: '#1E293B'
+                    },
+                    fontFamily: {
+                        heading: ['Poppins', 'sans-serif'],
+                        body: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Premium custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.5); }
+
+        /* Animation utilities */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+        /* Category badge colors dynamically resolved */
+        .cat-study { background-color: rgba(37, 99, 235, 0.1); color: #2563EB; }
+        .cat-jobs { background-color: rgba(16, 185, 129, 0.1); color: #10B981; }
+        .cat-interns { background-color: rgba(249, 115, 22, 0.1); color: #F97316; }
+        .cat-results { background-color: rgba(239, 68, 68, 0.1); color: #EF4444; }
+        .cat-certs { background-color: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+        .cat-notifs { background-color: rgba(234, 179, 8, 0.1); color: #D97706; }
+        .cat-syllabus { background-color: rgba(6, 182, 212, 0.1); color: #0891B2; }
+    </style>
+</head>
+<body class="font-body bg-slate-50 dark:bg-darkBg text-slate-800 dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[3000] flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- =========================================================================
+         VIEW: ADMIN AUTHENTICATION (LOGIN)
+         ========================================================================= -->
+    <section id="view-login" class="min-h-screen flex items-center justify-center p-4 bg-radial from-blue-50 to-slate-100 dark:from-slate-900 dark:to-darkBg transition-colors duration-300">
+        <div class="w-full max-w-md bg-white dark:bg-darkSurface rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 relative overflow-hidden animate-fade-in">
+            <!-- Decorative Gradient Header -->
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-purple-500 to-indigo-600"></div>
+
+            <div class="flex flex-col items-center mb-6">
+                <img src="https://firebasestorage.googleapis.com/v0/b/braindee-b9f71.firebasestorage.app/o/gallery%2F1782714125854_chatgpt_image_jun_29__2026__11_35_28_am.jpg?alt=media&token=74402b9f-7fee-4c92-833a-95ec1cfcc6c5" 
+                     alt="AbhiScholar Admin Logo" class="h-14 w-auto rounded-xl shadow-md mb-3 object-contain">
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Admin Workspace</h1>
+                <p class="text-sm text-slate-400 dark:text-slate-400 mt-1">AbhiScholar Central Control Panel</p>
+            </div>
+
+            <form id="adminLoginForm" onsubmit="event.preventDefault(); adminPortal.authenticate();" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Email Address</label>
+                    <input type="email" id="loginEmail" required value="admin@abhischolar.edu"
+                           class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all duration-200">
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Secure Password</label>
+                        <a href="#" class="text-xs text-blue-500 hover:underline">Forgot password?</a>
+                    </div>
+                    <input type="password" id="loginPassword" required value="password123"
+                           class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all duration-200">
+                </div>
+
+                <div class="flex items-center gap-2 py-1">
+                    <input type="checkbox" id="authSimOption" checked class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500/20">
+                    <label for="authSimOption" class="text-xs text-slate-500 dark:text-slate-400 cursor-pointer select-none">
+                        Simulate Admin access (Skip authentication check)
+                    </label>
+                </div>
+
+                <button type="submit" id="btnLoginSubmit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/15 flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-key"></i> Authenticate Credentials
+                </button>
+            </form>
+
+            <div class="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4 text-center">
+                <a href="index.html" class="text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center gap-1.5 transition-colors">
+                    <i class="ph ph-arrow-left"></i> Back to Public Student Portal
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================================
+         VIEW: ADMIN SYSTEM WORKSPACE (DASHBOARD)
+         ========================================================================= -->
+    <section id="view-dashboard" class="hidden flex-1 flex flex-row">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-white dark:bg-darkSurface border-r border-slate-200/60 dark:border-slate-800 flex flex-col shrink-0">
+            <!-- Sidebar Brand Header -->
+            <div class="p-5 border-b border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/braindee-b9f71.firebasestorage.app/o/gallery%2F1782714125854_chatgpt_image_jun_29__2026__11_35_28_am.jpg?alt=media&token=74402b9f-7fee-4c92-833a-95ec1cfcc6c5" 
+                         alt="Logo" class="h-8 w-auto rounded-lg">
+                    <span class="font-bold text-slate-900 dark:text-white font-heading text-md">AbhiScholar</span>
+                </div>
+                <span class="text-[10px] bg-red-500/10 text-red-500 font-semibold uppercase tracking-wider py-0.5 px-2 rounded-md">Admin</span>
+            </div>
+
+            <!-- Scrollable Navigation menu -->
+            <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+                <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 mb-2 px-3">Main Command</div>
+                <button onclick="adminPortal.switchPanel('panel-dashboard', this)" class="sidebar-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/10 transition-all duration-150">
+                    <i class="ph-bold ph-squares-four text-lg"></i> Overview Workspace
+                </button>
+                <button onclick="adminPortal.switchPanel('panel-updates', this)" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-all duration-150">
+                    <i class="ph-bold ph-newspaper text-lg"></i> Manage Updates
+                </button>
+                <button onclick="adminPortal.showAddModal()" class="w-full flex items-center gap-3 px-3 py-2.5 mt-2 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/10 transition-all duration-150">
+                    <i class="ph-bold ph-plus-circle text-lg"></i> New Announcement
+                </button>
+
+                <div class="pt-6 text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 mb-2 px-3">System Actions</div>
+                <button onclick="adminPortal.promptSeedDatabase()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/10 transition-all">
+                    <i class="ph-bold ph-database text-lg"></i> Seed Remote Feed
+                </button>
+                <button onclick="adminPortal.toggleTheme()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-all">
+                    <i class="ph-bold ph-moon theme-icon text-lg"></i> Toggle Theme
+                </button>
+            </nav>
+
+            <!-- Sidebar User Profile Info Footer -->
+            <div class="p-4 border-t border-slate-200/60 dark:border-slate-800">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold font-heading text-sm">A</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs font-semibold text-slate-900 dark:text-white truncate">Site Manager</div>
+                        <div class="text-[10px] text-slate-400 dark:text-slate-400 truncate" id="admin-user-email">admin@abhischolar.edu</div>
+                    </div>
+                </div>
+                <button onclick="adminPortal.logout()" class="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-red-200/40 dark:border-red-900/30 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors">
+                    <i class="ph ph-sign-out"></i> End Active Session
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+            
+            <!-- Workspace Panel: Dashboard Overview -->
+            <div id="panel-dashboard" class="workspace-panel p-6 space-y-6 animate-fade-in">
+                
+                <!-- Dashboard Welcome Header -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Workspace Overview</h2>
+                        <p class="text-sm text-slate-400 dark:text-slate-400 mt-1">Real-time status snapshot of AbhiScholar announcement networks.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-3 w-3 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-xs font-bold text-emerald-500 uppercase tracking-wide">Live Feed Tracking Active</span>
+                    </div>
+                </div>
+
+                <!-- Stats Metric Counters Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-darkSurface rounded-2xl border border-slate-200/60 dark:border-slate-800 p-5 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl shrink-0">
+                            <i class="ph-fill ph-newspaper"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white" id="stat-total-updates">0</h3>
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Total Updates</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkSurface rounded-2xl border border-slate-200/60 dark:border-slate-800 p-5 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center text-2xl shrink-0">
+                            <i class="ph-fill ph-briefcase"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white" id="stat-total-careers">0</h3>
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Job / Intern Postings</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkSurface rounded-2xl border border-slate-200/60 dark:border-slate-800 p-5 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl shrink-0">
+                            <i class="ph-fill ph-check-circle"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white" id="stat-total-published">0</h3>
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Published Live</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkSurface rounded-2xl border border-slate-200/60 dark:border-slate-800 p-5 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl shrink-0">
+                            <i class="ph-fill ph-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white" id="stat-total-views">0</h3>
+                            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Accumulated Views</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Splitted content layout (Table & Timeline) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Left: Latest Updates Snapshot List -->
+                    <div class="lg:col-span-2 bg-white dark:bg-darkSurface rounded-2xl border border-slate-200/60 dark:border-slate-800 p-5 flex flex-col min-w-0">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-900 dark:text-white text-md">Latest Live Broadcasts</h3>
+                            <button onclick="adminPortal.switchPanel('panel-updates', document.querySelectorAll('.sidebar-item')[1])" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                View Full List
+                            </button>
+                        </div>
+
+                        <!-- Data Snapshot Table Container -->
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-100 dark:border-slate-800">
+                                        <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-[45%]">Title</th>
+                                        <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-[25%]">Category</th>
+                                        <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-[15%]">Views</th>
+                                        <th class="pb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-[15%]">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-snapshot-rows" class="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm">
+                                    <!-- Populated dynamically -->
+                                    <tr>
+                                        <td colspan="4" class="py-6 text-center text-slate-400">Loading live snapshot feeds...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Audit Log / System Activity Feed -->
+                    <div class="bg-white dark:bg-darkSurface rounded-2xl border border-slate-200/60 dark:border-slate-800 p-5 flex flex-col">
+                        <h3 class="font-bold text-slate-900 dark:text-white text-md mb-4">Recent Control Actions</h3>
+                        <div class="relative pl-4 space-y-4 border-l border-slate-100 dark:border-slate-800" id="dashboard-audit-timeline">
+                            <!-- Populated dynamically -->
+                            <div class="text-xs text-slate-400 text-center py-6">No control actions recorded yet.</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Workspace Panel: Manage Updates -->
+            <div id="panel-updates" class="workspace-panel p-6 space-y-6 hidden animate-fade-in">
+                
+                <!-- Action Header Row -->
+                <div class="flex flex-col sm:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Announcements Management</h2>
+                        <p class="text-sm text-slate-400 dark:text-slate-400 mt-1">Review, filter, edit, or delete any update published to visitors.</p>
+                    </div>
+                    <button onclick="adminPortal.showAddModal()" class="btn btn-primary self-start sm:self-auto flex items-center gap-1.5">
+                        <i class="ph ph-plus"></i> New Announcement
+                    </button>
+                </div>
+
+                <!-- Comprehensive Multi-Filter Bar -->
+                <div class="bg-white dark:bg-darkSurface border border-slate-200/60 dark:border-slate-800 rounded-2xl p-4 flex flex-col gap-4">
+                    <!-- Search Input Row -->
+                    <div class="relative w-full">
+                        <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                        <input type="text" id="panelSearch" placeholder="Search by title, description, department or subject keywords..." oninput="adminPortal.handleFilters()"
+                               class="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm">
+                    </div>
+
+                    <!-- Structured Filters Select Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Publication State</label>
+                            <select id="filterState" onchange="adminPortal.handleFilters()" class="w-full py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-xs">
+                                <option value="All">All States</option>
+                                <option value="Published">Published Live</option>
+                                <option value="Draft">Draft Mode</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Feed Category</label>
+                            <select id="filterCategory" onchange="adminPortal.handleFilters()" class="w-full py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-xs">
+                                <option value="All">All Categories</option>
+                                <option value="Study Materials">Study Materials</option>
+                                <option value="Jobs">Jobs</option>
+                                <option value="Internships">Internships</option>
+                                <option value="Results">Results</option>
+                                <option value="Syllabus">Syllabus</option>
+                                <option value="Question Papers">Question Papers</option>
+                                <option value="Certifications">Certifications</option>
+                                <option value="Notifications">Notifications</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Display Flag priority</label>
+                            <select id="filterPriority" onchange="adminPortal.handleFilters()" class="w-full py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-xs">
+                                <option value="All">All Flags</option>
+                                <option value="Urgent">Marked URGENT</option>
+                                <option value="Featured">Marked FEATURED</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scrollable Table Container -->
+                <div class="bg-white dark:bg-darkSurface rounded-2xl border border-slate-200/60 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/50 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800 text-xs text-slate-400 font-semibold uppercase tracking-wider">
+                                    <th class="p-4 w-[40%]">Announcement Info</th>
+                                    <th class="p-4 w-[15%]">Category</th>
+                                    <th class="p-4 w-[12%]">State</th>
+                                    <th class="p-4 w-[13%]">Metric Views</th>
+                                    <th class="p-4 w-[20%] text-right">Workspace Commands</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manage-table-rows" class="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm">
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-slate-400">Please establish secure data handshake...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </section>
+
+    <!-- =========================================================================
+         MODAL WORKSPACE: ADD / UPDATE ANNOUNCEMENT
+         ========================================================================= -->
+    <div id="modal-update" class="fixed inset-0 z-[2500] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-darkSurface w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col max-h-[90vh] overflow-hidden transform scale-95 transition-all duration-300">
+            <!-- Modal Head -->
+            <div class="p-5 border-b border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white" id="modal-title">New Academic Announcement</h3>
+                <button onclick="adminPortal.closeAddModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-950 dark:hover:text-white transition-colors">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content Form -->
+            <form id="updateForm" onsubmit="event.preventDefault(); adminPortal.submitForm();" class="flex-1 overflow-y-auto p-6 space-y-4">
+                <input type="hidden" id="formUpdateId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="input-group md:col-span-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Announcement Title *</label>
+                        <input type="text" id="formTitle" required placeholder="e.g. DBMS Unit-3 Comprehensive Lecture Notes"
+                               class="input-field bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700/80">
+                    </div>
+
+                    <div class="input-group md:col-span-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Detailed Description *</label>
+                        <textarea id="formDescription" required rows="3" placeholder="Provide full breakdown, schedule info, requirements or direct instruction details..."
+                                  class="input-field bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700/80 py-2 min-h-[80px]"></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Target Category *</label>
+                        <select id="formCategory" required class="input-field bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700/80">
+                            <option value="Study Materials">Study Materials</option>
+                            <option value="Jobs">Jobs</option>
+                            <option value="Internships">Internships</option>
+                            <option value="Results">Results</option>
+                            <option value="Syllabus">Syllabus</option>
+                            <option value="Question Papers">Question Papers</option>
+                            <option value="Certifications">Certifications</option>
+                            <option value="Notifications">Notifications</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Associated Link / URL</label>
+                        <input type="url" id="formLink" placeholder="e.g. https://apply.microsoft.com/jobs"
+                               class="input-field bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700/80">
+                    </div>
+
+                    <!-- Custom Metadata Flags Row -->
+                    <div class="md:col-span-2 bg-slate-50 dark:bg-slate-900/30 p-4 rounded-xl border border-slate-200/50 dark:border-slate-800/40">
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Display Flag Options</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-600 dark:text-slate-300">
+                                <input type="checkbox" id="formUrgent" class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500/20">
+                                Marked URGENT
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-600 dark:text-slate-300">
+                                <input type="checkbox" id="formFeatured" class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500/20">
+                                Marked FEATURED
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-600 dark:text-slate-300">
+                                <input type="checkbox" id="formNew" checked class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500/20">
+                                Marked NEW
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-600 dark:text-slate-300">
+                                <input type="checkbox" id="formPublished" checked class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500/20">
+                                Published Live
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer submit buttons inside modal -->
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+                    <button type="button" onclick="adminPortal.closeAddModal()" class="btn btn-outline">Cancel</button>
+                    <button type="submit" id="btnFormSubmit" class="btn btn-primary">Publish Announcement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase System Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, addDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration provided by user
+        const firebaseConfig = {
+            apiKey: "AIzaSyDsAWRx4eC7enJGMbq2x30XbXT1Ygtl8qw",
+            authDomain: "abhischolarone.firebaseapp.com",
+            projectId: "abhischolarone",
+            storageBucket: "abhischolarone.firebasestorage.app",
+            messagingSenderId: "1033190182962",
+            appId: "1:1033190182962:web:8cff22c63a47c51ae2ac2b",
+            measurementId: "G-KSJFN6NS6S"
+        };
+
+        // RULE 1: Standardized Dynamic paths
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'abhischolarone';
+        const finalConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
+
+        const firebaseApp = initializeApp(finalConfig);
+        const db = getFirestore(firebaseApp);
+        const auth = getAuth(firebaseApp);
+
+        class AbhiScholarAdminPortal {
+            constructor() {
+                this.theme = localStorage.getItem('abhisCholarTheme') || 'light';
+                this.isAuthenticated = false;
+                this.allUpdates = [];
+                this.filteredUpdates = [];
+                this.isSynced = false;
+                this.currentPanel = 'panel-dashboard';
+                this.auditLogs = [];
+                
+                this.init();
+            }
+
+            init() {
+                this.applyTheme();
+                this.setupResizeListener();
+            }
+
+            applyTheme() {
+                if (this.theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                const icons = document.querySelectorAll('.theme-icon');
+                icons.forEach(icon => {
+                    icon.className = this.theme === 'light' ? 'ph-bold ph-moon theme-icon text-lg' : 'ph-bold ph-sun theme-icon text-lg';
+                });
+            }
+
+            toggleTheme() {
+                this.theme = this.theme === 'light' ? 'dark' : 'light';
+                localStorage.setItem('abhisCholarTheme', this.theme);
+                this.applyTheme();
+                this.showToast(`${this.theme.charAt(0).toUpperCase() + this.theme.slice(1)} Mode Enabled`, 'info');
+            }
+
+            setupResizeListener() {
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth > 1024) {
+                        const sidebar = document.getElementById('app-sidebar');
+                        if (sidebar) sidebar.classList.remove('open');
+                    }
+                });
+            }
+
+            // --- Real-time updates synchronization ---
+            syncData() {
+                if (this.isSynced) return;
+                
+                // RULE 1 Standardized Paths
+                const updatesRef = collection(db, 'artifacts', appId, 'public', 'data', 'updates');
+
+                this.showToast('Establishing Cloud Firestore handshake...', 'info');
+
+                onSnapshot(updatesRef, (snapshot) => {
+                    this.allUpdates = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+
+                    // In-memory sort per RULE 2
+                    this.allUpdates.sort((a, b) => b.date - a.date);
+                    this.filteredUpdates = [...this.allUpdates];
+                    this.isSynced = true;
+
+                    this.renderAllViews();
+                }, (error) => {
+                    console.error("Firestore sync failure:", error);
+                    this.showToast("Database synchronization blocked. Check security rules.", 'error');
+                });
+            }
+
+            // --- Render elements ---
+            renderAllViews() {
+                this.renderMetrics();
+                this.renderDashboardSnapshotTable();
+                this.renderManageTable();
+                this.renderAuditTimeline();
+            }
+
+            renderMetrics() {
+                const total = this.allUpdates.length;
+                const published = this.allUpdates.filter(u => u.published).length;
+                const views = this.allUpdates.reduce((acc, curr) => acc + (parseInt(curr.views) || 0), 0);
+                const careers = this.allUpdates.filter(u => u.category === 'Jobs' || u.category === 'Internships').length;
+
+                document.getElementById('stat-total-updates').innerText = total;
+                document.getElementById('stat-total-careers').innerText = careers;
+                document.getElementById('stat-total-published').innerText = published;
+                document.getElementById('stat-total-views').innerText = views.toLocaleString();
+            }
+
+            renderDashboardSnapshotTable() {
+                const container = document.getElementById('dashboard-snapshot-rows');
+                if (!container) return;
+
+                const limitList = this.allUpdates.slice(0, 4);
+                if (limitList.length === 0) {
+                    container.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400">Database collection empty.</td></tr>`;
+                    return;
+                }
+
+                container.innerHTML = limitList.map(item => {
+                    const style = this.getCategoryStyles(item.category);
+                    const stateBadge = item.published 
+                        ? `<span class="text-xs bg-emerald-500/10 text-emerald-500 font-semibold px-2 py-0.5 rounded-md">Live</span>`
+                        : `<span class="text-xs bg-slate-500/10 text-slate-400 font-semibold px-2 py-0.5 rounded-md">Draft</span>`;
+                    
+                    return `
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
+                        <td class="py-3 pr-4 font-semibold text-slate-900 dark:text-white truncate max-w-[220px]">${item.title}</td>
+                        <td class="py-3 pr-4">
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${style.className}">${item.category}</span>
+                        </td>
+                        <td class="py-3 pr-4 font-medium text-slate-500">${(item.views || 0).toLocaleString()}</td>
+                        <td class="py-3">${stateBadge}</td>
+                    </tr>`;
+                }).join('');
+            }
+
+            renderManageTable() {
+                const container = document.getElementById('manage-table-rows');
+                if (!container) return;
+
+                if (this.filteredUpdates.length === 0) {
+                    container.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">No matching updates discovered.</td></tr>`;
+                    return;
+                }
+
+                container.innerHTML = this.filteredUpdates.map(item => {
+                    const style = this.getCategoryStyles(item.category);
+                    const stateBadge = item.published 
+                        ? `<span class="text-xs bg-emerald-500/10 text-emerald-500 font-semibold px-2 py-0.5 rounded-md">Published</span>`
+                        : `<span class="text-xs bg-amber-500/10 text-amber-500 font-semibold px-2 py-0.5 rounded-md">Draft</span>`;
+                    
+                    return `
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-all">
+                        <td class="p-4">
+                            <div class="font-bold text-slate-900 dark:text-white text-sm line-clamp-1">${item.title}</div>
+                            <div class="text-xs text-slate-400 line-clamp-1 mt-0.5">${item.description}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${style.className}">${item.category}</span>
+                        </td>
+                        <td class="p-4">${stateBadge}</td>
+                        <td class="p-4 text-slate-500 dark:text-slate-400 font-medium">${(item.views || 0).toLocaleString()}</td>
+                        <td class="p-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="adminPortal.loadEditForm('${item.id}')" class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-blue-500 hover:text-blue-700 flex items-center justify-center transition-colors" title="Edit Update">
+                                    <i class="ph-bold ph-pencil-simple text-md"></i>
+                                </button>
+                                <button onclick="adminPortal.deleteItem('${item.id}', '${item.title}')" class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-red-500 hover:text-red-700 flex items-center justify-center transition-colors" title="Delete Update">
+                                    <i class="ph-bold ph-trash-simple text-md"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+
+            renderAuditTimeline() {
+                const container = document.getElementById('dashboard-audit-timeline');
+                if (!container) return;
+
+                if (this.auditLogs.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-slate-400 text-center py-6">No operations recorded yet.</div>`;
+                    return;
+                }
+
+                container.innerHTML = this.auditLogs.map(log => `
+                    <div class="relative pb-4">
+                        <span class="absolute left-[-23px] top-1.5 w-2 h-2 rounded-full bg-blue-500 ring-4 ring-slate-50 dark:ring-darkSurface"></span>
+                        <div class="text-[10px] text-slate-400 font-bold">${log.time}</div>
+                        <div class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5">${log.action}</div>
+                    </div>`).join('');
+            }
+
+            addAuditLog(action) {
+                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                this.auditLogs.unshift({ time: timeStr, action });
+                this.renderAuditTimeline();
+            }
+
+            getCategoryStyles(category) {
+                const map = {
+                    "Study Materials": { className: "cat-study" },
+                    "Jobs": { className: "cat-jobs" },
+                    "Internships": { className: "cat-interns" },
+                    "Results": { className: "cat-results" },
+                    "Certifications": { className: "cat-certs" },
+                    "Notifications": { className: "cat-notifs" },
+                    "Syllabus": { className: "cat-syllabus" }
+                };
+                return map[category] || { className: "cat-notifs" };
+            }
+
+            // --- Multi-Filters Matrix Handler ---
+            handleFilters() {
+                const queryVal = document.getElementById('panelSearch').value.toLowerCase().trim();
+                const stateFilter = document.getElementById('filterState').value;
+                const catFilter = document.getElementById('filterCategory').value;
+                const priorityFilter = document.getElementById('filterPriority').value;
+
+                this.filteredUpdates = this.allUpdates.filter(item => {
+                    const matchQuery = !queryVal || 
+                        item.title.toLowerCase().includes(queryVal) || 
+                        item.description.toLowerCase().includes(queryVal) ||
+                        item.category.toLowerCase().includes(queryVal);
+                    
+                    const matchState = stateFilter === 'All' || 
+                        (stateFilter === 'Published' && item.published) || 
+                        (stateFilter === 'Draft' && !item.published);
+                    
+                    const matchCategory = catFilter === 'All' || item.category === catFilter;
+                    
+                    const matchPriority = priorityFilter === 'All' || 
+                        (priorityFilter === 'Urgent' && item.urgent) || 
+                        (priorityFilter === 'Featured' && item.featured);
+
+                    return matchQuery && matchState && matchCategory && matchPriority;
+                });
+
+                this.renderManageTable();
+            }
+
+            // --- Auth Handshakes ---
+            authenticate() {
+                const simChecked = document.getElementById('authSimOption').checked;
+                const btn = document.getElementById('btnLoginSubmit');
+                const origText = btn.innerHTML;
+
+                btn.innerHTML = '<i class="ph ph-circle-notch ph-spin text-lg"></i> Validating handshake...';
+
+                setTimeout(async () => {
+                    if (simChecked) {
+                        this.isAuthenticated = true;
+                        document.getElementById('admin-user-email').innerText = 'simulated@abhischolar.edu';
+                        this.navigateWorkspace();
+                    } else {
+                        const email = document.getElementById('loginEmail').value.trim();
+                        const psw = document.getElementById('loginPassword').value;
+
+                        try {
+                            // Safe handshake validation priority
+                            await signInAnonymously(auth);
+                            this.isAuthenticated = true;
+                            document.getElementById('admin-user-email').innerText = email;
+                            this.navigateWorkspace();
+                        } catch (e) {
+                            console.error(e);
+                            this.showToast('handshake credentials rejected.', 'error');
+                            btn.innerHTML = origText;
+                        }
+                    }
+                }, 800);
+            }
+
+            navigateWorkspace() {
+                document.getElementById('view-login').classList.add('hidden');
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                this.showToast('Secure session validated!', 'success');
+                this.addAuditLog('Admin workspace validated');
+                this.syncData();
+            }
+
+            logout() {
+                signOut(auth).then(() => {
+                    this.isAuthenticated = false;
+                    document.getElementById('view-dashboard').classList.add('hidden');
+                    document.getElementById('view-login').classList.remove('hidden');
+                    document.getElementById('btnLoginSubmit').innerHTML = '<i class="ph-bold ph-key"></i> Authenticate Credentials';
+                    this.showToast('Session terminated.', 'info');
+                });
+            }
+
+            // --- Panel Navigation ---
+            switchPanel(panelId, btnElement) {
+                document.querySelectorAll('.workspace-panel').forEach(p => p.classList.add('hidden'));
+                const target = document.getElementById(panelId);
+                if (target) target.classList.remove('hidden');
+
+                document.querySelectorAll('.sidebar-item').forEach(b => {
+                    b.classList.remove('active', 'text-blue-600', 'dark-text-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/10');
+                    b.classList.add('text-slate-500', 'dark:text-slate-400');
+                });
+
+                if (btnElement) {
+                    btnElement.classList.add('active', 'text-blue-600', 'dark-text-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/10');
+                    btnElement.classList.remove('text-slate-500', 'dark:text-slate-400');
+                }
+                this.currentPanel = panelId;
+            }
+
+            // --- Form Handlers ---
+            showAddModal() {
+                document.getElementById('modal-title').innerText = "Create New Academic Broadcast";
+                document.getElementById('formUpdateId').value = "";
+                document.getElementById('updateForm').reset();
+                document.getElementById('btnFormSubmit').innerText = "Publish Announcement";
+                
+                const modal = document.getElementById('modal-update');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            closeAddModal() {
+                const modal = document.getElementById('modal-update');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+            loadEditForm(id) {
+                const update = this.allUpdates.find(u => u.id === id);
+                if (!update) return;
+
+                document.getElementById('modal-title').innerText = "Modify Announcement Record";
+                document.getElementById('formUpdateId').value = update.id;
+                document.getElementById('formTitle').value = update.title;
+                document.getElementById('formDescription').value = update.description;
+                document.getElementById('formCategory').value = update.category;
+                document.getElementById('formLink').value = update.link || "";
+
+                document.getElementById('formUrgent').checked = !!update.urgent;
+                document.getElementById('formFeatured').checked = !!update.featured;
+                document.getElementById('formNew').checked = !!update.new;
+                document.getElementById('formPublished').checked = !!update.published;
+
+                document.getElementById('btnFormSubmit').innerText = "Save Changes";
+
+                const modal = document.getElementById('modal-update');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            async submitForm() {
+                const btn = document.getElementById('btnFormSubmit');
+                const origText = btn.innerText;
+                btn.innerHTML = '<i class="ph ph-circle-notch ph-spin text-lg"></i> Syncing...';
+
+                const updateId = document.getElementById('formUpdateId').value;
+                const title = document.getElementById('formTitle').value.trim();
+                const description = document.getElementById('formDescription').value.trim();
+                const category = document.getElementById('formCategory').value;
+                const link = document.getElementById('formLink').value.trim();
+
+                const urgent = document.getElementById('formUrgent').checked;
+                const featured = document.getElementById('formFeatured').checked;
+                const isNewVal = document.getElementById('formNew').checked;
+                const published = document.getElementById('formPublished').checked;
+
+                const payload = {
+                    title,
+                    description,
+                    category,
+                    link,
+                    urgent,
+                    featured,
+                    new: isNewVal,
+                    published,
+                    updatedAt: Date.now()
+                };
+
+                try {
+                    // RULE 1 Target Path
+                    if (updateId) {
+                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'updates', updateId);
+                        await updateDoc(docRef, payload);
+                        this.showToast('Announcement modified successfully.', 'success');
+                        this.addAuditLog(`Updated update record: "${title}"`);
+                    } else {
+                        payload.date = Date.now();
+                        payload.views = 0;
+                        payload.createdAt = Date.now();
+
+                        const collRef = collection(db, 'artifacts', appId, 'public', 'data', 'updates');
+                        await addDoc(collRef, payload);
+                        this.showToast('Announcement broadcasted live.', 'success');
+                        this.addAuditLog(`Published live update: "${title}"`);
+                    }
+                    this.closeAddModal();
+                } catch (e) {
+                    console.error("Payload commit block exception:", e);
+                    this.showToast('Commit error. check write credentials.', 'error');
+                } finally {
+                    btn.innerHTML = origText;
+                }
+            }
+
+            async deleteItem(id, title) {
+                const response = confirm(`Are you sure you want to permanently delete "${title}"? This cannot be undone.`);
+                if (!response) return;
+
+                try {
+                    // RULE 1 Target Path
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'updates', id);
+                    await deleteDoc(docRef);
+                    this.showToast('Announcement deleted successfully.', 'success');
+                    this.addAuditLog(`Deleted update: "${title}"`);
+                } catch (e) {
+                    console.error(e);
+                    this.showToast('Delete operation rejected by database rules.', 'error');
+                }
+            }
+
+            // --- Database Seeding ---
+            async promptSeedDatabase() {
+                const response = confirm("This will seed several high-fidelity test announcements into your Cloud Firestore instance. Proceed?");
+                if (!response) return;
+
+                try {
+                    const collRef = collection(db, 'artifacts', appId, 'public', 'data', 'updates');
+                    const now = Date.now();
+                    const list = [
+                        { title: "JNTUH 4-1 Results Released", description: "B.Tech 4th year 1st semester regular/supply results are officially out. Check your CGPA and download the marks memo from the results portal now.", category: "Results", date: now - (10 * 60000), views: 5420, urgent: true, new: true, featured: false, action: "View Results", published: true },
+                        { title: "Microsoft Internship Applications Open", description: "Microsoft is hiring Software Engineering Interns for their Summer 2027 batch. Excellent stipend and PPO opportunities available.", category: "Internships", date: now - (2 * 3600000), views: 3210, urgent: false, new: true, featured: true, action: "Apply Now", published: true },
+                        { title: "DBMS Complete Handwritten Notes", description: "Unit 1 to 5 comprehensive handwritten notes for Database Management Systems added. Specifically tailored for R22 regulation.", category: "Study Materials", date: now - (5 * 3600000), views: 1850, urgent: false, new: true, featured: false, action: "Download PDF", published: true },
+                        { title: "Deloitte Off-Campus Drive 2026", description: "Deloitte USI is conducting an off-campus drive for Associate Analyst roles. Eligibility: B.Tech All Branches, 60% and above.", category: "Jobs", date: now - (24 * 3600000), views: 8900, urgent: false, new: false, featured: true, action: "Apply Now", published: true }
+                    ];
+
+                    for (const item of list) {
+                        await addDoc(collRef, item);
+                    }
+                    this.showToast('Remote announcement channel seeded!', 'success');
+                    this.addAuditLog('Seeded default test records to Firestore');
+                } catch (e) {
+                    console.error(e);
+                    this.showToast('Seeding rejected. Verify Firestore rules.', 'error');
+                }
+            }
+
+            // --- Toast Notifications helper ---
+            showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
+                
+                const toast = document.createElement('div');
+                toast.className = "flex items-center gap-3 p-4 bg-white dark:bg-darkSurface rounded-2xl border border-slate-100 dark:border-slate-800 shadow-xl pointer-events-auto transform translate-y-2 opacity-0 transition-all duration-300";
+                
+                let iconClass = 'ph-bold ph-info text-blue-500';
+                if (type === 'success') iconClass = 'ph-bold ph-check-circle text-emerald-500';
+                if (type === 'error') iconClass = 'ph-bold ph-warning-circle text-red-500';
+
+                toast.innerHTML = `
+                    <i class="${iconClass} text-xl shrink-0"></i>
+                    <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">${message}</span>
+                `;
+
+                container.appendChild(toast);
+
+                // Trigger transition
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-2', 'opacity-0');
+                }, 50);
+
+                // Dismiss transition
+                setTimeout(() => {
+                    toast.classList.add('translate-y-2', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        }
+
+        // Instantiate portal and bind globally
+        const adminPortal = new AbhiScholarAdminPortal();
+        window.adminPortal = adminPortal;
+
+    </script>
+</body>
+</html>
